@@ -26,7 +26,7 @@ def grasp_cube(arm, cube_pose):
         A 4x4 transformation matrix representing the cube's pose in the robot base frame.
         All translational units in this matrix are in meters.
     """
-    # Extract position in mm (robot API uses mm)
+    # Robot API uses mm
     x = cube_pose[0, 3] * 1000
     y = cube_pose[1, 3] * 1000
     z = cube_pose[2, 3] * 1000
@@ -35,11 +35,11 @@ def grasp_cube(arm, cube_pose):
     x_axis = cube_pose[:3, 0]
     yaw = numpy.degrees(numpy.arctan2(x_axis[1], x_axis[0]))
 
-    # Top-down grasp orientation: roll=180 flips end-effector to point down
+    # Top-down grasp orientation
     grasp_roll, grasp_pitch, grasp_yaw = 180, 0, yaw
 
-    PRE_GRASP_OFFSET = 120  # mm above tag face before descending
-    GRASP_DEPTH = 10        # mm below tag face to grip cube sides
+    PRE_GRASP_OFFSET = 120 
+    GRASP_DEPTH = 10
 
     # Open gripper before approaching
     arm.open_lite6_gripper()
@@ -72,7 +72,7 @@ def place_cube(arm, cube_pose):
         A 4x4 transformation matrix representing the target placement pose in the robot base frame.
         All translational units in this matrix are in meters.
     """
-    # Extract position in mm
+
     x = cube_pose[0, 3] * 1000
     y = cube_pose[1, 3] * 1000
     z = cube_pose[2, 3] * 1000
@@ -83,8 +83,8 @@ def place_cube(arm, cube_pose):
 
     place_roll, place_pitch, place_yaw = 180, 0, yaw
 
-    PRE_PLACE_OFFSET = 120  # mm above target before descending
-    PLACE_DEPTH = 10        # mm below tag face to set cube down
+    PRE_PLACE_OFFSET = 120
+    PLACE_DEPTH = 10
 
     # Move to pre-place position above target
     arm.set_position(x, y, z + PRE_PLACE_OFFSET, place_roll, place_pitch, place_yaw, wait=True)
@@ -152,8 +152,6 @@ def get_transform_cube(observation, camera_intrinsic, camera_pose):
             t_cam_cube[:3, :3] = tag.pose_R
             t_cam_cube[:3, 3] = tag.pose_t.flatten()
 
-            # Transform to robot base frame: t_robot_cube = inv(t_cam_robot) @ t_cam_cube
-            # camera_pose (t_cam_robot) maps robot frame -> camera frame, so inv maps back
             t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
 
             return t_robot_cube, t_cam_cube
