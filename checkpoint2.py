@@ -20,16 +20,32 @@ def place_in_basket(arm, basket_pose, vaccum_gripper=False):
     arm : xarm.wrapper.XArmAPI
         The initialized XArm API object controlling the Lite6 robot.
     basket_pose : list or numpy.ndarray
-        A 6-element array representing the target drop-off pose in the robot 
-        base frame formatted as [x, y, z, roll, pitch, yaw]. 
-        Translational units (x, y, z) are in meters, and rotational units 
+        A 6-element array representing the target drop-off pose in the robot
+        base frame formatted as [x, y, z, roll, pitch, yaw].
+        Translational units (x, y, z) are in meters, and rotational units
         (roll, pitch, yaw) are in radians.
     vaccum_gripper : bool, optional
-        If True, uses the vacuum gripper logic instead of the standard Lite6 
+        If True, uses the vacuum gripper logic instead of the standard Lite6
         gripper. Defaults to False.
     """
-    # TODO
-    pass
+    x = basket_pose[0] * 1000
+    y = basket_pose[1] * 1000
+    z = basket_pose[2] * 1000
+    roll  = numpy.degrees(basket_pose[3])
+    pitch = numpy.degrees(basket_pose[4])
+    yaw   = numpy.degrees(basket_pose[5])
+
+    APPROACH_OFFSET = 150
+
+    arm.set_position(x, y, z + APPROACH_OFFSET, roll, pitch, yaw, wait=True)
+    arm.set_position(x, y, z, roll, pitch, yaw, wait=True)
+
+    
+    arm.open_lite6_gripper()
+    time.sleep(0.5)
+    arm.stop_lite6_gripper()
+
+    arm.set_position(x, y, z + APPROACH_OFFSET, roll, pitch, yaw, wait=True)
 
 def main():
 
@@ -51,8 +67,14 @@ def main():
         # Get Observation
         cv_image = zed.image
 
-        t_cam_cube = None
-        #TODO
+        t_cam_robot = get_transform_camera_robot(cv_image, camera_intrinsic)
+        if t_cam_robot is None:
+            return
+        result = get_transform_cube(cv_image, camera_intrinsic, t_cam_robot)
+        if result is None:
+            print('Cube tag not detected.')
+            return
+        t_robot_cube, t_cam_cube = result
         
         # Visualization
         draw_pose_axes(cv_image, camera_intrinsic, t_cam_cube)
@@ -64,7 +86,8 @@ def main():
         if key == ord('k'):
             cv2.destroyAllWindows()
 
-            # TODO
+            grasp_cube(arm, t_robot_cube)
+            place_in_basket(arm, BASKET_POSE)
     
     finally:
         # Close Lite6 Robot
