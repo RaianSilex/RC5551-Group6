@@ -34,7 +34,22 @@ def main():
         # Get Observation
         cv_image = zed.image
 
-        # TODO
+        results = {}
+        for prompt in stacking_order:
+            result = cube_pose_detector.get_transforms(cv_image, prompt)
+            if result is None:
+                print(f'Could not detect {prompt}.')
+                return
+            results[prompt] = result[0]
+
+        base_pose = results[stacking_order[-1]]
+
+        cubes_to_stack = list(reversed(stacking_order[:-1]))
+        for level, prompt in enumerate(cubes_to_stack, start=1):
+            target_pose = base_pose.copy()
+            target_pose[2, 3] += level * STACK_HEIGHT
+            grasp_cube(arm, results[prompt])
+            place_cube(arm, target_pose)
     
     finally:
         # Close Lite6 Robot
