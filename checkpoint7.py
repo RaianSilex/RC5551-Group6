@@ -34,6 +34,14 @@ def main():
 
         t_cam_cube = None
         # TODO
+        t_cam_robot = get_transform_camera_robot(cv_image, camera_intrinsic)
+        if t_cam_robot is None:
+            return
+        result = get_transform_cube(cv_image, camera_intrinsic, t_cam_robot)
+        if result is None:
+            print('Cube tag not detected.')
+            return
+        t_robot_cube, t_cam_cube = result
         
         # Visualization
         draw_pose_axes(cv_image, camera_intrinsic, t_cam_cube)
@@ -44,7 +52,8 @@ def main():
 
         if key == ord('k'):
             cv2.destroyAllWindows()
-
+            grasp_cube(arm, t_robot_cube)
+            place_in_basket(arm, BASKET_POSE)
             # TODO
     
     finally:
