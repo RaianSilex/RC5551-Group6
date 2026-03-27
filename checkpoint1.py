@@ -12,7 +12,7 @@ CUBE_TAG_FAMILY = 'tag36h11'
 CUBE_TAG_ID = 4
 CUBE_TAG_SIZE = 0.0207
 
-robot_ip = ''
+robot_ip = '192.168.1.182'
 
 def grasp_cube(arm, cube_pose):
     """

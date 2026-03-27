@@ -9,7 +9,7 @@ from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 
 CUBE_SIZE = 0.025
-robot_ip = '192.168.1.183'
+robot_ip = '192.168.1.182'
 
 def get_transform_cube(observation, camera_intrinsic, camera_pose):
     """

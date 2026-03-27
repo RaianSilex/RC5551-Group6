@@ -9,7 +9,7 @@ from checkpoint1 import grasp_cube, get_transform_cube, GRIPPER_LENGTH
 # TODO
 BASKET_POSE = None # Measure it using the robot's free drive mode.
 
-robot_ip = ''
+robot_ip = '192.168.1.182'
 
 def place_in_basket(arm, basket_pose, vaccum_gripper=False):
     """

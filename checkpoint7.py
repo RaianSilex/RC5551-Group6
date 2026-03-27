@@ -11,7 +11,7 @@ from checkpoint2 import place_in_basket
 from checkpoint6 import CUBE_SIZE, get_transform_cube
 
 cube_prompt = 'red cube'
-robot_ip = '192.168.1.183'
+robot_ip = '192.168.1.182'
 
 # TODO: Measure the basket pose using the robot's Free Drive Mode.
 

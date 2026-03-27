@@ -10,7 +10,7 @@ from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 # Height of one cube in meters (50 mm)
 STACK_HEIGHT = 0.05
 
-robot_ip = ''
+robot_ip = '192.168.1.182'
 
 def main():
 
