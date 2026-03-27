@@ -9,8 +9,7 @@ from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 
 CUBE_SIZE = 0.025
-
-robot_ip = ''
+robot_ip = '192.168.1.183'
 
 def get_transform_cube(observation, camera_intrinsic, camera_pose):
     """
@@ -47,29 +46,69 @@ def get_transform_cube(observation, camera_intrinsic, camera_pose):
         bgr = image
 
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv, numpy.array([0, 60, 50]), numpy.array([180, 255, 255]))
+    red1  = cv2.inRange(hsv, numpy.array([0,   80,  50]), numpy.array([10,  255, 255]))
+    red2  = cv2.inRange(hsv, numpy.array([160, 80,  50]), numpy.array([180, 255, 255]))
+    green = cv2.inRange(hsv, numpy.array([40,  80,  50]), numpy.array([85,  255, 255]))
+    blue  = cv2.inRange(hsv, numpy.array([95,  80,  50]), numpy.array([130, 255, 255]))
+    mask  = red1 | red2 | green | blue
 
-    pts = point_cloud[mask > 0, :3].astype(numpy.float64)
-    valid = numpy.isfinite(pts).all(axis=1)
-    pts = pts[valid]
+    h_img = mask.shape[0]
+    mask[:int(h_img * 0.3), :] = 0
 
-    if len(pts) < 10:
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        print('No colored contours found.')
         return None
+    valid_contours = [c for c in contours if cv2.contourArea(c) > 500]
+    if not valid_contours:
+        print('No contours large enough.')
+        return None
+    largest = max(valid_contours, key=cv2.contourArea)
+    print(f'Detected contour: area={cv2.contourArea(largest):.0f}, bounds={cv2.boundingRect(largest)}')
+
+    cv2.drawContours(image, [largest], -1, (0, 255, 255), 3)
+
+    contour_mask = numpy.zeros(mask.shape, dtype=numpy.uint8)
+    cv2.drawContours(contour_mask, [largest], -1, 255, cv2.FILLED)
+
+    pix_ys, pix_xs = numpy.where(contour_mask > 0)
+    depths = point_cloud[pix_ys, pix_xs, 2].astype(numpy.float64) / 1000.0
+    valid = numpy.isfinite(depths) & (depths > 0.3) & (depths < 1.5)
+    pix_xs, pix_ys, depths = pix_xs[valid], pix_ys[valid], depths[valid]
+
+    if len(depths) < 10:
+        print('Not enough valid depth points.')
+        return None
+
+    fx = camera_intrinsic[0, 0]
+    fy = camera_intrinsic[1, 1]
+    cx = camera_intrinsic[0, 2]
+    cy = camera_intrinsic[1, 2]
+
+    X = (pix_xs - cx) * depths / fx
+    Y = (pix_ys - cy) * depths / fy
+    Z = depths
+    pts = numpy.stack([X, Y, Z], axis=1)
 
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pts)
     pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
 
     if len(pcd.points) < 10:
+        print('Not enough points after outlier removal.')
         return None
 
     obb = pcd.get_oriented_bounding_box()
-    center = numpy.array(obb.center)
+    center = numpy.array(obb.center) 
+    #center[0] = center[0] - 0.0125
+    center[1] = center[1] - CUBE_SIZE/2
+    center[2] = center[2] + CUBE_SIZE/2
     R = numpy.array(obb.R)
+    print(f'OBB center in camera frame (m): {numpy.round(center, 3)}')
 
     t_cam_cube = numpy.eye(4)
     t_cam_cube[:3, :3] = R
-    t_cam_cube[:3, 3] = center
+    t_cam_cube[:3, 3] = center 
 
     t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
 
