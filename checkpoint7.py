@@ -130,8 +130,9 @@ class CubePoseDetector:
 
         t_cam_cube = numpy.eye(4)
         t_cam_cube[:3, :3] = R
-        t_cam_cube[:3, 3] = center 
+        t_cam_cube[:3, 3] = center
 
+        camera_pose = get_transform_camera_robot(observation, self.camera_intrinsic)
         t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
 
         return t_robot_cube, t_cam_cube
