@@ -28,12 +28,12 @@ def place_in_basket(arm, basket_pose, vaccum_gripper=False):
         If True, uses the vacuum gripper logic instead of the standard Lite6
         gripper. Defaults to False.
     """
-    x = basket_pose[0] * 1000
-    y = basket_pose[1] * 1000
-    z = basket_pose[2] * 1000
-    roll  = numpy.degrees(basket_pose[3])
-    pitch = numpy.degrees(basket_pose[4])
-    yaw   = numpy.degrees(basket_pose[5])
+    x = basket_pose[0]
+    y = basket_pose[1]
+    z = basket_pose[2]
+    roll  = basket_pose[3]
+    pitch = basket_pose[4]
+    yaw   = basket_pose[5]
 
     APPROACH_OFFSET = 150
 

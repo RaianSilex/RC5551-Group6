@@ -6,11 +6,16 @@ from xarm.wrapper import XArmAPI
 from utils.vis_utils import draw_pose_axes
 from utils.zed_camera import ZedCamera
 from checkpoint0 import get_transform_camera_robot
-from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
+from checkpoint1 import grasp_cube, GRIPPER_LENGTH
+from checkpoint2 import place_in_basket
 from checkpoint6 import CUBE_SIZE, get_transform_cube
 
 cube_prompt = 'red cube'
 robot_ip = '192.168.1.183'
+
+# TODO: Measure the basket pose using the robot's Free Drive Mode.
+
+BASKET_POSE = None
 
 class CubePoseDetector:
     """
@@ -132,7 +137,7 @@ class CubePoseDetector:
         t_cam_cube[:3, :3] = R
         t_cam_cube[:3, 3] = center
 
-        camera_pose = get_transform_camera_robot(observation, self.camera_intrinsic)
+        camera_pose = get_transform_camera_robot(image, self.camera_intrinsic)
         t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
 
         return t_robot_cube, t_cam_cube
@@ -182,7 +187,7 @@ def main():
             cv2.destroyAllWindows()
 
             grasp_cube(arm, t_robot_cube)
-            place_cube(arm, t_robot_cube)
+            place_in_basket(arm, BASKET_POSE)
             
     
     finally:
