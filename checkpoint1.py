@@ -39,22 +39,22 @@ def grasp_cube(arm, cube_pose):
     grasp_roll, grasp_pitch, grasp_yaw = 180, 0, yaw
 
     PRE_GRASP_OFFSET = 120 
-    GRASP_DEPTH = 10
+    GRASP_DEPTH = 2
 
     # Open gripper before approaching
     arm.open_lite6_gripper()
-    time.sleep(0.5)
+    time.sleep(1.2)
     arm.stop_lite6_gripper()
 
     # Move to pre-grasp position above cube
     arm.set_position(x, y, z + PRE_GRASP_OFFSET, grasp_roll, grasp_pitch, grasp_yaw, wait=True)
 
     # Descend to grasp position
-    arm.set_position(x, y, z - GRASP_DEPTH, grasp_roll, grasp_pitch, grasp_yaw, wait=True)
+    arm.set_position(x, y, z + GRASP_DEPTH, grasp_roll, grasp_pitch, grasp_yaw, wait=True)
 
     # Close gripper to grasp cube
     arm.close_lite6_gripper()
-    time.sleep(0.8)
+    time.sleep(1.2)
     arm.stop_lite6_gripper()
 
     # Lift cube back to safe height
@@ -84,18 +84,20 @@ def place_cube(arm, cube_pose):
     place_roll, place_pitch, place_yaw = 180, 0, yaw
 
     PRE_PLACE_OFFSET = 120
-    PLACE_DEPTH = 10
+    PLACE_DEPTH = 2
 
     # Move to pre-place position above target
     arm.set_position(x, y, z + PRE_PLACE_OFFSET, place_roll, place_pitch, place_yaw, wait=True)
 
     # Descend to place position
-    arm.set_position(x, y, z - PLACE_DEPTH, place_roll, place_pitch, place_yaw, wait=True)
+    arm.set_position(x, y, z + PLACE_DEPTH, place_roll, place_pitch, place_yaw, wait=True)
 
     # Open gripper to release cube
     arm.open_lite6_gripper()
     time.sleep(0.5)
     arm.stop_lite6_gripper()
+
+    # arm.set_vacuum_gripper(True, wait=True)
 
     # Lift back to safe height
     arm.set_position(x, y, z + PRE_PLACE_OFFSET, place_roll, place_pitch, place_yaw, wait=True)

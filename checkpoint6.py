@@ -99,10 +99,12 @@ def get_transform_cube(observation, camera_intrinsic, camera_pose):
         return None
 
     obb = pcd.get_oriented_bounding_box()
+    print(obb)
     center = numpy.array(obb.center) 
     #center[0] = center[0] - 0.0125
     center[1] = center[1] - CUBE_SIZE/2
     center[2] = center[2] + CUBE_SIZE/2
+
     R = numpy.array(obb.R)
     print(f'OBB center in camera frame (m): {numpy.round(center, 3)}')
 

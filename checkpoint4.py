@@ -8,7 +8,7 @@ from utils.zed_camera import ZedCamera
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 
 # Height of one cube in meters (50 mm)
-STACK_HEIGHT = 0.05
+STACK_HEIGHT = 0.022
 
 robot_ip = '192.168.1.182'
 

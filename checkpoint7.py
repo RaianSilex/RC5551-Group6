@@ -15,7 +15,7 @@ robot_ip = '192.168.1.182'
 
 # TODO: Measure the basket pose using the robot's Free Drive Mode.
 
-BASKET_POSE = None
+BASKET_POSE = [231.8, -293.4, 150, -180, 0, 0]
 
 class CubePoseDetector:
     """
@@ -127,7 +127,7 @@ class CubePoseDetector:
 
         obb = pcd.get_oriented_bounding_box()
         center = numpy.array(obb.center) 
-        #center[0] = center[0] - 0.0125
+        # center[0] = center[0] - CUBE_SIZE/2
         center[1] = center[1] - CUBE_SIZE/2
         center[2] = center[2] + CUBE_SIZE/2
         R = numpy.array(obb.R)

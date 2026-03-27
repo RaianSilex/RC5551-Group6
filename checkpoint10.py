@@ -59,6 +59,7 @@ def main():
 
         # Build the stacking sequence: bottom cube is the base, stack the rest above it
         base_pose = robot_poses[stacking_order[-1]]
+        
         cubes_to_stack = list(reversed(stacking_order[:-1]))
 
         for level, prompt in enumerate(cubes_to_stack, start=1):

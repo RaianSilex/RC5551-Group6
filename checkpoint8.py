@@ -9,7 +9,7 @@ from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 from checkpoint6 import CUBE_SIZE
 
-cube_prompt = 'blue cube'
+cube_prompt = 'green cube'
 robot_ip = '192.168.1.182'
 
 class CubePoseDetector:
@@ -23,7 +23,7 @@ class CubePoseDetector:
     COLOR_RANGES = {
         'red':   [((0,   80, 50), (10,  255, 255)), ((160, 80, 50), (180, 255, 255))],
         'green': [((40,  60, 50), (80,  255, 255))],
-        'blue':  [((95,  80, 50), (130, 255, 255))],
+        'blue':  [((100, 80, 50), (130, 255, 255))],
     }
 
     def __init__(self, camera_intrinsic):
@@ -151,16 +151,21 @@ class CubePoseDetector:
             return None
         obb = pcd.get_oriented_bounding_box()
 
-
+        print(obb)
         center = numpy.array(obb.center)
-        center[1] = center[1] - CUBE_SIZE / 2
-        center[2] = center[2] + CUBE_SIZE / 2
+        # center[0] = center[0] - CUBE_SIZE/2
+        #center[1] = center[1] - CUBE_SIZE / 2
+        if('green' in cube_prompt):
+            center[2] = center[2] + CUBE_SIZE / 2
+        
+        # 
         R = numpy.array(obb.R)
         print(f'OBB center in camera frame (m): {numpy.round(center, 3)}')
 
         t_cam_cube = numpy.eye(4)
         t_cam_cube[:3, :3] = R
         t_cam_cube[:3, 3] = center
+        
 
         t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
 

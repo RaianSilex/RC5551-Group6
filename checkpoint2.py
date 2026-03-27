@@ -7,7 +7,7 @@ from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, get_transform_cube, GRIPPER_LENGTH
 
 # TODO
-BASKET_POSE = None # Measure it using the robot's free drive mode.
+BASKET_POSE = [231.8, -293.4, 150, -180, 0, 0]
 
 robot_ip = '192.168.1.182'
 
