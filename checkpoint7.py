@@ -164,8 +164,12 @@ def main():
         point_cloud = zed.point_cloud
 
         t_cam_cube = None
-        # TODO
-        
+        result = cube_pose_detector.get_transforms([cv_image, point_cloud], cube_prompt)
+        if result is None:
+            print('Target cube not detected.')
+            return
+        t_robot_cube, t_cam_cube = result
+
         # Visualization
         draw_pose_axes(cv_image, camera_intrinsic, t_cam_cube)
         cv2.namedWindow('Verifying Cube Pose', cv2.WINDOW_NORMAL)
@@ -176,7 +180,9 @@ def main():
         if key == ord('k'):
             cv2.destroyAllWindows()
 
-            # TODO
+            grasp_cube(arm, t_robot_cube)
+            place_cube(arm, t_robot_cube)
+            
     
     finally:
         # Close Lite6 Robot
