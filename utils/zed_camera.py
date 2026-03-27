@@ -26,7 +26,7 @@ class ZedCamera:
             self._zed.grab(sl.RuntimeParameters())
 
         # Setup Explosure for Better Image Quality
-        self._zed.set_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE, exposure)
+        # self._zed.set_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE, exposure)
 
         # Get Camera Intrinsic
         camera_info = self._zed.get_camera_information()
