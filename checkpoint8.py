@@ -170,20 +170,19 @@ class CubePoseDetector:
             # Fallback: use all points
             top_pts = pts_robot
 
-        # The top face centroid gives the correct X, Y of the cube center.
-        # The cube center Z is half a cube size below the top surface.
-        center_robot = numpy.array([
-            numpy.median(top_pts[:, 0]),
-            numpy.median(top_pts[:, 1]),
-            max_z - CUBE_SIZE / 2.0,
-        ])
-
-        center_robot[1] = center_robot[1] + CUBE_SIZE/3
-        print(f'Cube center in robot frame (m): {numpy.round(center_robot, 4)}')
-
-        # Compute yaw from 2D minimum-area rectangle of top-face points in robot XY
+        # Use minAreaRect of top-face XY to get the geometric center
+        # (immune to perspective point-density bias unlike median)
         top_xy = top_pts[:, :2].astype(numpy.float32)
         rect = cv2.minAreaRect(top_xy)
+        rect_center = rect[0]  # (cx, cy) in robot XY meters
+
+        center_robot = numpy.array([
+            rect_center[0],
+            rect_center[1],
+            max_z - CUBE_SIZE / 2.0,
+        ])
+        print(f'Cube center in robot frame (m): {numpy.round(center_robot, 4)}')
+
         yaw_deg = rect[2]  # angle in degrees from cv2.minAreaRect
         # minAreaRect returns angle in [-90, 0); snap to nearest cube-edge alignment
         yaw_rad = numpy.radians(yaw_deg)

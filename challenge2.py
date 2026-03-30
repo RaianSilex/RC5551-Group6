@@ -90,15 +90,15 @@ class Challenge2Detector:
         if len(top_pts) < 5:
             top_pts = pts_robot
 
-        center_robot = numpy.array([
-            numpy.median(top_pts[:, 0]),
-            numpy.median(top_pts[:, 1]),
-            max_z - cube_size / 2.0,
-        ])
-
-        # Compute yaw from 2D minimum-area rectangle of top-face points in robot XY
         top_xy = top_pts[:, :2].astype(numpy.float32)
         rect = cv2.minAreaRect(top_xy)
+        rect_center = rect[0]
+
+        center_robot = numpy.array([
+            rect_center[0],
+            rect_center[1],
+            max_z - cube_size / 2.0,
+        ])
         yaw_rad = numpy.radians(rect[2])
         cos_y = numpy.cos(yaw_rad)
         sin_y = numpy.sin(yaw_rad)
