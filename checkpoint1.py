@@ -43,7 +43,7 @@ def grasp_cube(arm, cube_pose):
 
     # Open gripper before approaching
     arm.open_lite6_gripper()
-    time.sleep(1.2)
+    time.sleep(1.5)
     arm.stop_lite6_gripper()
 
     # Move to pre-grasp position above cube
@@ -54,7 +54,7 @@ def grasp_cube(arm, cube_pose):
 
     # Close gripper to grasp cube
     arm.close_lite6_gripper()
-    time.sleep(1.2)
+    time.sleep(1.5)
     arm.stop_lite6_gripper()
 
     # Lift cube back to safe height
@@ -94,7 +94,7 @@ def place_cube(arm, cube_pose):
 
     # Open gripper to release cube
     arm.open_lite6_gripper()
-    time.sleep(0.5)
+    time.sleep(1.5)
     arm.stop_lite6_gripper()
 
     # arm.set_vacuum_gripper(True, wait=True)

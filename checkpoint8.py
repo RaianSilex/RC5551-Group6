@@ -177,15 +177,28 @@ class CubePoseDetector:
             numpy.median(top_pts[:, 1]),
             max_z - CUBE_SIZE / 2.0,
         ])
+
+        center_robot[1] = center_robot[1] + CUBE_SIZE/3
         print(f'Cube center in robot frame (m): {numpy.round(center_robot, 4)}')
 
-        # Use OBB for rotation (yaw estimation)
-        obb = pcd.get_oriented_bounding_box()
-        R_obb = numpy.array(obb.R)
+        # Compute yaw from 2D minimum-area rectangle of top-face points in robot XY
+        top_xy = top_pts[:, :2].astype(numpy.float32)
+        rect = cv2.minAreaRect(top_xy)
+        yaw_deg = rect[2]  # angle in degrees from cv2.minAreaRect
+        # minAreaRect returns angle in [-90, 0); snap to nearest cube-edge alignment
+        yaw_rad = numpy.radians(yaw_deg)
+        # Build rotation matrix: pure Z-axis rotation (top-down grasp)
+        cos_y = numpy.cos(yaw_rad)
+        sin_y = numpy.sin(yaw_rad)
+        R_robot = numpy.array([
+            [cos_y, -sin_y, 0],
+            [sin_y,  cos_y, 0],
+            [0,      0,     1],
+        ])
 
         # Build robot-frame transform
         t_robot_cube = numpy.eye(4)
-        t_robot_cube[:3, :3] = R_obb
+        t_robot_cube[:3, :3] = R_robot
         t_robot_cube[:3, 3] = center_robot
 
         # Compute camera-frame transform for visualization

@@ -96,12 +96,20 @@ class Challenge2Detector:
             max_z - cube_size / 2.0,
         ])
 
-        # Use OBB rotation from camera-frame cloud for yaw
-        obb_cam = pcd.get_oriented_bounding_box()
-        R_obb = numpy.array(obb_cam.R)
+        # Compute yaw from 2D minimum-area rectangle of top-face points in robot XY
+        top_xy = top_pts[:, :2].astype(numpy.float32)
+        rect = cv2.minAreaRect(top_xy)
+        yaw_rad = numpy.radians(rect[2])
+        cos_y = numpy.cos(yaw_rad)
+        sin_y = numpy.sin(yaw_rad)
+        R_robot = numpy.array([
+            [cos_y, -sin_y, 0],
+            [sin_y,  cos_y, 0],
+            [0,      0,     1],
+        ])
 
         t_robot_cube = numpy.eye(4)
-        t_robot_cube[:3, :3] = R_obb
+        t_robot_cube[:3, :3] = R_robot
         t_robot_cube[:3, 3] = center_robot
 
         t_cam_cube = t_cam_robot @ t_robot_cube
