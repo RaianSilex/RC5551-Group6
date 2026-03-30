@@ -9,7 +9,7 @@ from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 from checkpoint4 import STACK_HEIGHT
 from checkpoint6 import CUBE_SIZE
 
-robot_ip = '192.168.1.182'
+robot_ip = '192.168.1.168'
 
 def main():
 

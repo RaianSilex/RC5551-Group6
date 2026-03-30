@@ -7,7 +7,7 @@ from utils.zed_camera import ZedCamera
 from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 
-robot_ip = '192.168.1.183'
+robot_ip = '192.168.1.168'
 
 # Minimum pixel area for a contour to be considered a cube
 MIN_CONTOUR_AREA = 200

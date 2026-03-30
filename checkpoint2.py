@@ -9,7 +9,7 @@ from checkpoint1 import grasp_cube, get_transform_cube, GRIPPER_LENGTH
 # TODO
 BASKET_POSE = [231.8, -293.4, 150, -180, 0, 0]
 
-robot_ip = '192.168.1.182'
+robot_ip = '192.168.1.168'
 
 def place_in_basket(arm, basket_pose, vaccum_gripper=False):
     """

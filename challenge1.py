@@ -9,7 +9,7 @@ from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 from checkpoint4 import STACK_HEIGHT
 from checkpoint6 import CUBE_SIZE
 
-robot_ip = '192.168.1.183'
+robot_ip = '192.168.1.168'
 
 # Minimum pixel area for a contour to be considered a cube
 MIN_CONTOUR_AREA = 300

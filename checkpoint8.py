@@ -13,7 +13,7 @@ from checkpoint6 import CUBE_SIZE
 TOP_FACE_THRESHOLD = 0.006
 
 cube_prompt = 'green cube'
-robot_ip = '192.168.1.182'
+robot_ip = '192.168.1.168'
 
 class CubePoseDetector:
     """
