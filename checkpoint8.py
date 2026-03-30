@@ -9,6 +9,9 @@ from checkpoint0 import get_transform_camera_robot
 from checkpoint1 import grasp_cube, place_cube, GRIPPER_LENGTH
 from checkpoint6 import CUBE_SIZE
 
+# Threshold (meters) to select top-face points from the highest Z in robot frame
+TOP_FACE_THRESHOLD = 0.006
+
 cube_prompt = 'green cube'
 robot_ip = '192.168.1.182'
 
@@ -140,34 +143,53 @@ class CubePoseDetector:
         X = (pix_xs - cx) * depths / fx
         Y = (pix_ys - cy) * depths / fy
         Z = depths
-        pts = numpy.stack([X, Y, Z], axis=1)
+        pts_cam = numpy.stack([X, Y, Z], axis=1)
 
-        # Remove outliers and compute oriented bounding box
+        # Remove outliers
         pcd = o3d.geometry.PointCloud()
-        pcd.points = o3d.utility.Vector3dVector(pts)
+        pcd.points = o3d.utility.Vector3dVector(pts_cam)
         pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
         if len(pcd.points) < 10:
             print('Not enough points after outlier removal.')
             return None
+
+        pts_cam_clean = numpy.asarray(pcd.points)
+
+        # Transform points to robot frame to find the true cube center
+        t_cam2robot = numpy.linalg.inv(camera_pose)  # 4x4
+        ones = numpy.ones((pts_cam_clean.shape[0], 1))
+        pts_cam_h = numpy.hstack([pts_cam_clean, ones])  # Nx4
+        pts_robot = (t_cam2robot @ pts_cam_h.T).T[:, :3]  # Nx3
+
+        # In robot frame, Z is up. Find the top face of the cube.
+        max_z = numpy.max(pts_robot[:, 2])
+        top_mask = pts_robot[:, 2] > (max_z - TOP_FACE_THRESHOLD)
+        top_pts = pts_robot[top_mask]
+
+        if len(top_pts) < 5:
+            # Fallback: use all points
+            top_pts = pts_robot
+
+        # The top face centroid gives the correct X, Y of the cube center.
+        # The cube center Z is half a cube size below the top surface.
+        center_robot = numpy.array([
+            numpy.median(top_pts[:, 0]),
+            numpy.median(top_pts[:, 1]),
+            max_z - CUBE_SIZE / 2.0,
+        ])
+        print(f'Cube center in robot frame (m): {numpy.round(center_robot, 4)}')
+
+        # Use OBB for rotation (yaw estimation)
         obb = pcd.get_oriented_bounding_box()
+        R_obb = numpy.array(obb.R)
 
-        print(obb)
-        center = numpy.array(obb.center)
-        # center[0] = center[0] - CUBE_SIZE/2
-        #center[1] = center[1] - CUBE_SIZE / 2
-        if('green' in cube_prompt):
-            center[2] = center[2] + CUBE_SIZE / 2
-        
-        # 
-        R = numpy.array(obb.R)
-        print(f'OBB center in camera frame (m): {numpy.round(center, 3)}')
+        # Build robot-frame transform
+        t_robot_cube = numpy.eye(4)
+        t_robot_cube[:3, :3] = R_obb
+        t_robot_cube[:3, 3] = center_robot
 
-        t_cam_cube = numpy.eye(4)
-        t_cam_cube[:3, :3] = R
-        t_cam_cube[:3, 3] = center
-        
-
-        t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
+        # Compute camera-frame transform for visualization
+        t_cam_cube = camera_pose @ t_robot_cube
 
         return t_robot_cube, t_cam_cube
 

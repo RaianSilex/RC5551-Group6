@@ -90,6 +90,8 @@ def get_transform_cube(observation, camera_intrinsic, camera_pose):
     Z = depths
     pts = numpy.stack([X, Y, Z], axis=1)
 
+    TOP_FACE_THRESHOLD = 0.006
+
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pts)
     pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
@@ -98,21 +100,37 @@ def get_transform_cube(observation, camera_intrinsic, camera_pose):
         print('Not enough points after outlier removal.')
         return None
 
+    pts_cam_clean = numpy.asarray(pcd.points)
+
+    # Transform points to robot frame to find the true cube center
+    t_cam2robot = numpy.linalg.inv(camera_pose)
+    ones = numpy.ones((pts_cam_clean.shape[0], 1))
+    pts_cam_h = numpy.hstack([pts_cam_clean, ones])
+    pts_robot = (t_cam2robot @ pts_cam_h.T).T[:, :3]
+
+    # In robot frame Z is up. Find the top face of the cube.
+    max_z = numpy.max(pts_robot[:, 2])
+    top_mask = pts_robot[:, 2] > (max_z - TOP_FACE_THRESHOLD)
+    top_pts = pts_robot[top_mask]
+
+    if len(top_pts) < 5:
+        top_pts = pts_robot
+
+    center_robot = numpy.array([
+        numpy.median(top_pts[:, 0]),
+        numpy.median(top_pts[:, 1]),
+        max_z - CUBE_SIZE / 2.0,
+    ])
+    print(f'Cube center in robot frame (m): {numpy.round(center_robot, 4)}')
+
     obb = pcd.get_oriented_bounding_box()
-    print(obb)
-    center = numpy.array(obb.center) 
-    #center[0] = center[0] - 0.0125
-    center[1] = center[1] - CUBE_SIZE/2
-    center[2] = center[2] + CUBE_SIZE/2
+    R_obb = numpy.array(obb.R)
 
-    R = numpy.array(obb.R)
-    print(f'OBB center in camera frame (m): {numpy.round(center, 3)}')
+    t_robot_cube = numpy.eye(4)
+    t_robot_cube[:3, :3] = R_obb
+    t_robot_cube[:3, 3] = center_robot
 
-    t_cam_cube = numpy.eye(4)
-    t_cam_cube[:3, :3] = R
-    t_cam_cube[:3, 3] = center 
-
-    t_robot_cube = numpy.linalg.inv(camera_pose) @ t_cam_cube
+    t_cam_cube = camera_pose @ t_robot_cube
 
     return t_robot_cube, t_cam_cube
 

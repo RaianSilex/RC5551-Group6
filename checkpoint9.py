@@ -49,14 +49,9 @@ def main():
         # Compute target pose: red goes on top of green
         green_top = numpy.eye(4)
         green_top[:3, :3] = t_robot_green[:3, :3]
-        # green_top[0, 3] = t_robot_green[0, 3] - CUBE_SIZE/2
-        # green_top[1, 3] = t_robot_green[1, 3] + CUBE_SIZE/2
-        green_top[0, 3] = t_robot_green[0, 3] 
-        green_top[1, 3] = t_robot_green[1, 3] 
+        green_top[0, 3] = t_robot_green[0, 3]
+        green_top[1, 3] = t_robot_green[1, 3]
         green_top[2, 3] = t_robot_green[2, 3] + STACK_HEIGHT
-
-        # t_robot_red[0, 3] = t_robot_red[0, 3] - CUBE_SIZE/2
-        # t_robot_red[1, 3] = t_robot_red[1, 3] - CUBE_SIZE
 
         # Visualization: draw both cube poses on the image
         draw_pose_axes(cv_image, camera_intrinsic, t_cam_red)
